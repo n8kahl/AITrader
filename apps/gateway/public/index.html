@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Options Copilot</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: ui-sans-serif, system-ui; margin: 2rem; }
+    #plan { white-space: pre-wrap; background:#f8fafc; padding:1rem; border-radius:8px; }
+    .row { display:flex; gap:12px; align-items:center; margin: 12px 0; flex-wrap: wrap; }
+    input[type="file"]{ max-width: 260px; }
+    select, input, button { padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    button { background:#111827; color:white; border: none; cursor: pointer; }
+    button:hover { filter: brightness(1.05); }
+  </style>
+</head>
+<body>
+  <h1>Options Copilot</h1>
+  <p>Upload a broker screenshot to get a structured plan. Advice-only by default.</p>
+  <div class="row">
+    <input id="img" type="file" accept="image/*" />
+    <input id="hints" type="text" placeholder="Hints (e.g., broker or ticker)" />
+    <select id="mode">
+      <option value="advice">Advice only</option>
+      <option value="execute">Advice + execution</option>
+    </select>
+    <button id="go">Manage from Screenshot</button>
+  </div>
+  <div id="plan"></div>
+
+  <script>
+    async function fileToDataURL(file) {
+      return await new Promise((ok, err)=>{
+        const r = new FileReader();
+        r.onload = () => ok(r.result);
+        r.onerror = err;
+        r.readAsDataURL(file);
+      });
+    }
+    document.getElementById('go').onclick = async () => {
+      const f = document.getElementById('img').files[0];
+      if (!f) return alert("Select a screenshot first.");
+      const imageUrl = await fileToDataURL(f);
+      const hints = document.getElementById('hints').value;
+      const mode = document.getElementById('mode').value;
+
+      const r = await fetch('/api/manage-from-image', {
+        method: 'POST',
+        headers: {'content-type':'application/json'},
+        body: JSON.stringify({ imageUrl, hints, mode })
+      });
+      const j = await r.json();
+      document.getElementById('plan').textContent = JSON.stringify(j, null, 2);
+    };
+  </script>
+</body>
+</html>
