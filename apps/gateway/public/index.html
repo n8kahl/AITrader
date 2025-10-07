@@ -26,6 +26,20 @@
     </select>
     <button id="go">Manage from Screenshot</button>
   </div>
+  <h3>Or, enter position manually (no OpenAI key required)</h3>
+  <div class="row">
+    <input id="u" placeholder="Underlying (e.g., AAPL)" />
+    <input id="exp" placeholder="Expiration YYYY-MM-DD" />
+    <input id="strike" placeholder="Strike (e.g., 250)" type="number" step="0.01" />
+    <select id="right">
+      <option value="C">Call</option>
+      <option value="P">Put</option>
+    </select>
+    <input id="qty" placeholder="Qty" type="number" step="1" />
+    <input id="avg" placeholder="Avg Price" type="number" step="0.01" />
+    <button id="prefill">Prefill example</button>
+    <button id="goJson">Manage from JSON</button>
+  </div>
   <div id="plan"></div>
 
   <script>
@@ -37,6 +51,8 @@
         r.readAsDataURL(file);
       });
     }
+    const planBox = document.getElementById('plan');
+
     document.getElementById('go').onclick = async () => {
       const f = document.getElementById('img').files[0];
       if (!f) return alert("Select a screenshot first.");
@@ -44,13 +60,62 @@
       const hints = document.getElementById('hints').value;
       const mode = document.getElementById('mode').value;
 
-      const r = await fetch('/api/manage-from-image', {
-        method: 'POST',
-        headers: {'content-type':'application/json'},
-        body: JSON.stringify({ imageUrl, hints, mode })
-      });
-      const j = await r.json();
-      document.getElementById('plan').textContent = JSON.stringify(j, null, 2);
+      try {
+        const r = await fetch('/api/manage-from-image', {
+          method: 'POST',
+          headers: {'content-type':'application/json'},
+          body: JSON.stringify({ imageUrl, hints, mode })
+        });
+        const text = await r.text();
+        const data = text ? JSON.parse(text) : {};
+        if (!r.ok) {
+          planBox.textContent = `Error ${r.status}: ${data?.error || text}`;
+        } else {
+          planBox.textContent = JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        planBox.textContent = `Request failed: ${err}`;
+      }
+    };
+
+    // Prefill with a known contract that exists on Polygon
+    function prefill() {
+      document.getElementById('u').value = 'AAPL';
+      document.getElementById('exp').value = '2026-01-16';
+      document.getElementById('strike').value = '250';
+      document.getElementById('right').value = 'C';
+      document.getElementById('qty').value = '1';
+      document.getElementById('avg').value = '2.00';
+    }
+    document.getElementById('prefill').onclick = prefill;
+    // Auto-prefill on load for convenience
+    prefill();
+
+    document.getElementById('goJson').onclick = async () => {
+      const position = {
+        underlying: document.getElementById('u').value?.trim(),
+        expiration: document.getElementById('exp').value?.trim(),
+        strike: parseFloat(document.getElementById('strike').value),
+        right: document.getElementById('right').value,
+        quantity: parseInt(document.getElementById('qty').value||'0',10),
+        avg_price: parseFloat(document.getElementById('avg').value||'0')
+      };
+      const mode = document.getElementById('mode').value;
+      try {
+        const r = await fetch('/api/manage-from-json', {
+          method: 'POST', headers:{'content-type':'application/json'},
+          body: JSON.stringify({ position, mode })
+        });
+        const text = await r.text();
+        const data = text ? JSON.parse(text) : {};
+        if (!r.ok) {
+          planBox.textContent = `Error ${r.status}: ${data?.error || text}`;
+        } else {
+          planBox.textContent = JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        planBox.textContent = `Request failed: ${err}`;
+      }
     };
   </script>
 </body>

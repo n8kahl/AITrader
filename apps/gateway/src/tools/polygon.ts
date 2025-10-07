@@ -3,6 +3,7 @@ import { buildOccSymbol } from "../services/symbol.js";
 import { buildContext } from "../services/context.js";
 
 const POLY = "https://api.polygon.io";
+const POLY_KEY = process.env.POLYGON_KEY || process.env.POLYGON_API_KEY;
 
 export const polygonValidateTool = {
   name: "validate_position",
@@ -12,11 +13,11 @@ export const polygonValidateTool = {
   }, required: ["underlying","expiration","strike","right"] },
   execute: async ({ underlying, expiration, strike, right }: any) => {
     const symbol = buildOccSymbol(underlying, expiration, strike, right); // O:AAPL260116C00025000
-    const metaUrl = `${POLY}/v3/reference/options/contracts/${encodeURIComponent(symbol)}?apiKey=${process.env.POLYGON_KEY}`;
-    const meta = await fetch(metaUrl).then(r=>r.json()).catch(()=>({}));
+    const metaUrl = `${POLY}/v3/reference/options/contracts/${encodeURIComponent(symbol)}?apiKey=${POLY_KEY}`;
+    const meta: any = await fetch(metaUrl).then(r=>r.json()).catch(()=>({}));
 
-    const chainUrl = `${POLY}/v3/snapshot/options/${underlying}?apiKey=${process.env.POLYGON_KEY}`;
-    const chain = await fetch(chainUrl).then(r=>r.json()).catch(()=>({}));
+    const chainUrl = `${POLY}/v3/snapshot/options/${underlying}?apiKey=${POLY_KEY}`;
+    const chain: any = await fetch(chainUrl).then(r=>r.json()).catch(()=>({}));
     const contract = chain?.results?.find((c:any)=>c.ticker===symbol);
 
     return { symbol, meta, contract };

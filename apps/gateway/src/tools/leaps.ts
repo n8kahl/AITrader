@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 const POLY = "https://api.polygon.io";
+const POLY_KEY = process.env.POLYGON_KEY || process.env.POLYGON_API_KEY;
 
 type LeapIdea = { ticker:string; delta:number; iv:number; dte:number; oi:number; why:string };
 
@@ -25,18 +26,18 @@ export const leapSuggestTool = {
     const today = new Date().toISOString().slice(0,10);
 
     // Daily bars for trend slope
-    const dailyUrl = `${POLY}/v2/aggs/ticker/${underlying}/range/1/day/${new Date(Date.now()-400*864e5).toISOString().slice(0,10)}/${today}?sort=asc&limit=50000&apiKey=${process.env.POLYGON_KEY}`;
-    const djson = await fetch(dailyUrl).then(r=>r.json()).catch(()=>({}));
-    const closes = (djson.results||[]).map((b:any)=>b.c);
+    const dailyUrl = `${POLY}/v2/aggs/ticker/${underlying}/range/1/day/${new Date(Date.now()-400*864e5).toISOString().slice(0,10)}/${today}?sort=asc&limit=50000&apiKey=${POLY_KEY}`;
+    const djson: any = await fetch(dailyUrl).then(r=>r.json()).catch(()=>({}));
+    const closes = (djson?.results||[]).map((b:any)=>b.c);
     const trendSlope = slope(closes);
 
     // Option chain snapshot
-    const chainUrl = `${POLY}/v3/snapshot/options/${underlying}?apiKey=${process.env.POLYGON_KEY}`;
-    const chain = await fetch(chainUrl).then(r=>r.json()).catch(()=>({}));
+    const chainUrl = `${POLY}/v3/snapshot/options/${underlying}?apiKey=${POLY_KEY}`;
+    const chain: any = await fetch(chainUrl).then(r=>r.json()).catch(()=>({}));
 
     const now = new Date();
     const candidates: LeapIdea[] = [];
-    for (const c of (chain.results||[])) {
+    for (const c of (chain?.results||[])) {
       try {
         const exp = c.expiration_date ?? c.details?.expiration_date;
         if (!exp) continue;

@@ -9,6 +9,12 @@ export const router = Router();
 router.post("/manage-from-image", async (req, res) => {
   try {
     const { imageUrl, hints, mode="advice" } = req.body;
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(400).json({
+        error: "missing_openai_key",
+        message: "OPENAI_API_KEY is not set. Use /api/manage-from-json to supply a typed position, or add your key to parse screenshots.",
+      });
+    }
 
     const parsed = await parseImageTool.execute({ image_url: imageUrl, hints });
     if (!parsed?.underlying) {

@@ -1,12 +1,13 @@
 import fetch from "node-fetch";
 import { computeGEX } from "./gamma.js";
 const POLY = "https://api.polygon.io";
+const POLY_KEY = process.env.POLYGON_KEY || process.env.POLYGON_API_KEY;
 
 type Bar = { o:number; h:number; l:number; c:number; v:number; vw?:number; t:number };
 
-async function getBars(ticker:string, multiplier:number, timespan:string, fr:string, to:string) {
-  const url = `${POLY}/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${fr}/${to}?sort=asc&limit=50000&apiKey=${process.env.POLYGON_KEY}`;
-  const json = await fetch(url).then(r=>r.json()).catch(()=>({}));
+async function getBars(ticker:string, multiplier:number, timespan:string, fr:string, to:string): Promise<Bar[]> {
+  const url = `${POLY}/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${fr}/${to}?sort=asc&limit=50000&apiKey=${POLY_KEY}`;
+  const json: any = await fetch(url).then(r=>r.json()).catch(()=>({}));
   return (json.results||[]) as Bar[];
 }
 function atr14(bars: Bar[]) {
@@ -43,9 +44,9 @@ export async function buildContext(underlying: string, optionTicker: string) {
   const atr = atr14(daily);
   const vwap1m = vwap(intraday.slice(-120)); // last ~2h
 
-  const chainUrl = `${POLY}/v3/snapshot/options/${underlying}?apiKey=${process.env.POLYGON_KEY}`;
-  const chain = await fetch(chainUrl).then(r=>r.json()).catch(()=>({}));
-  const contract = chain.results?.find((c:any)=>c.ticker===optionTicker);
+  const chainUrl = `${POLY}/v3/snapshot/options/${underlying}?apiKey=${POLY_KEY}`;
+  const chain: any = await fetch(chainUrl).then(r=>r.json()).catch(()=>({}));
+  const contract = chain?.results?.find((c:any)=>c.ticker===optionTicker);
   const iv = contract?.implied_volatility ?? 0.25;
   const em = expectedMove(price, iv);
 

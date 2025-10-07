@@ -16,7 +16,8 @@ Includes **extended modules**: Live WebSocket Aggregator (stocks/options), **Gam
 ## Quickstart
 ```bash
 cd apps/gateway
-cp .env.example .env                  # fill OPENAI_API_KEY, POLYGON_KEY, etc.
+cp .env.example .env                  # fill OPENAI_API_KEY + Polygon key
+# Use either POLYGON_KEY or POLYGON_API_KEY in .env
 npm i
 npm run build
 npm start
@@ -40,4 +41,3 @@ npm start
 ## Safety
 - Advice-only default; execution requires explicit "Yes, execute".
 - Spread% guard, daily R cap, journaling & audit trail (extend `journal.ts` and add DB).
-
