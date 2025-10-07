@@ -8,7 +8,20 @@ import { orderTools } from "../tools/orders.js";
 export const quantAgent = new Agent({
   model: process.env.MODEL_REASONING || "gpt-4o",
   instructions: "You are a quantitative trading analyst. Be precise & terse.",
-  tools: [parseImageTool, polygonValidateTool, polygonContextTool, planTool]
+  tools: [
+    parseImageTool,
+    polygonValidateTool,
+    polygonContextTool,
+    planTool,
+    // Hosted MCP: Polygon server (internal Railway URL is supported)
+    ...(process.env.POLYGON_MCP_URL ? [{
+      type: 'mcp',
+      label: 'polygon',
+      server_url: process.env.POLYGON_MCP_URL,
+      description: 'Polygon MCP: chains, quotes, aggregates, reference data'
+      // headers: { 'x-api-key': process.env.POLYGON_API_KEY! } // if your MCP requires a header
+    } as any] : [])
+  ]
 });
 
 export const coachAgent = new Agent({
