@@ -18,10 +18,19 @@ export const parseImageTool = {
     ];
     if (hints) content.push({ type: "input_text", text: `Hints: ${hints}` });
 
+    const schemaName = "ExtractedOptionPosition";
     const resp = await (client as any).responses.create({
       model: process.env.MODEL_REASONING || "gpt-4o",
       input: [{ role: "user", content }],
-      text: { format: { type: "json_schema", json_schema: { name: "ExtractedOptionPosition", schema: positionSchema as any, strict: true } } }
+      text: {
+        format: {
+          type: "json_schema",
+          // Some SDK versions require name at this level
+          name: schemaName,
+          // Keep nested json_schema for compatibility
+          json_schema: { name: schemaName, schema: positionSchema as any, strict: true }
+        }
+      }
     } as any);
 
     return (resp as any).output?.[0]?.content?.[0]?.json;

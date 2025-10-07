@@ -9,6 +9,7 @@ export const planTool = {
   }, required:["position","context"] },
   execute: async ({ position, context }: any) => {
     const client: any = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+    const schemaName = "ManagementPlan";
     const resp = await (client as any).responses.create({
       model: process.env.MODEL_REASONING || "gpt-4o",
       input: [{
@@ -22,7 +23,13 @@ Rules:
 - If IV percentile is high, prefer debit/credit spreads; if low, allow single-leg buy.
 Return a crisp plan with intent, stop logic, TP ladder, invalidations, and 1-2 alternative contracts (ticker + why).` }]
       }],
-      text: { format: { type:"json_schema", json_schema: { name:"ManagementPlan", schema: planSchema as any, strict:true } } }
+      text: {
+        format: {
+          type: "json_schema",
+          name: schemaName,
+          json_schema: { name: schemaName, schema: planSchema as any, strict: true }
+        }
+      }
     } as any);
     return (resp as any).output?.[0]?.content?.[0]?.json;
   }
