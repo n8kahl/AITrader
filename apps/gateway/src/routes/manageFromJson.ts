@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { polygonValidateTool, polygonContextTool } from "../tools/polygon.js";
+import { fastRulesPlanTool } from "../tools/rules.js";
+import { recordJournal } from "../services/journalStore.js";
 import { planTool } from "../tools/plan.js";
 
 export const router = Router();
@@ -34,17 +36,28 @@ router.post("/manage-from-json", async (req, res) => {
       symbol: validated.symbol,
     });
 
+    // Risk checks (spread%)
+    const spreadPct = validated?.quote?.spreadPct ?? 0;
+    const maxSpread = Number(process.env.MAX_SPREAD_PCT || 2.5);
+
     let plan: any = null;
     if (process.env.OPENAI_API_KEY) {
       try {
         plan = await planTool.execute({ position: { ...position, ...validated }, context });
       } catch (err:any) {
-        plan = { disabled: true, reason: `plan_generation_failed: ${err?.message || 'unknown_error'}` };
+        // Fall back to deterministic rules plan if LLM fails
+        plan = await fastRulesPlanTool.execute({ position: { ...position, ...validated }, context });
+        plan.fallback = true;
+        plan.reason = `plan_generation_failed: ${err?.message || 'unknown_error'}`;
       }
     } else {
-      plan = { disabled: true, reason: "OPENAI_API_KEY is not set; plan generation is disabled. Set the key to enable plans." };
+      plan = await fastRulesPlanTool.execute({ position: { ...position, ...validated }, context });
+      plan.fallback = true;
+      plan.reason = "OPENAI_API_KEY is not set; returned fast rules-based plan.";
     }
-    res.json({ position, validated, context, plan, mode });
+    const guards = { spread_ok: spreadPct <= maxSpread, spreadPct, maxSpread };
+    recordJournal("plan_response", { position, validated, context, plan, guards, mode }).catch(()=>{});
+    res.json({ position, validated, context, plan, guards, mode });
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: e?.message || "internal_error" });

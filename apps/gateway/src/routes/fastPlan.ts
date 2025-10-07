@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { polygonValidateTool, polygonContextTool } from "../tools/polygon.js";
 import { fastRulesPlanTool } from "../tools/rules.js";
+import { recordJournal } from "../services/journalStore.js";
 
 export const router = Router();
 
@@ -19,10 +20,10 @@ router.post("/fast-plan-from-json", async (req, res) => {
     const context = await polygonContextTool.execute({ underlying: position.underlying, symbol: validated.symbol });
     const plan = await fastRulesPlanTool.execute({ position: { ...position, ...validated }, context });
 
+    recordJournal("plan_fast", { position, validated, context, plan }).catch(()=>{});
     res.json({ position, validated, context, plan, mode: "advice", fast: true });
   } catch (e:any) {
     console.error(e);
     res.status(500).json({ error: e?.message || "internal_error" });
   }
 });
-

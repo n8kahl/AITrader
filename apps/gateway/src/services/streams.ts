@@ -29,3 +29,21 @@ export function subscribeOption(symbol: string) {
   return { subscribed: symbol };
 }
 
+function ensureStocks() {
+  if (!singletons.stocks) {
+    singletons.stocks = new StockAggStream(key);
+    singletons.stocks.on("status", (s)=>streamBus.emit("status", { kind:"stocks", status:s }));
+    singletons.stocks.on("error", (e)=>streamBus.emit("error", { kind:"stocks", error:String(e) }));
+    singletons.stocks.on("agg", (agg:any)=>{
+      streamBus.emit("agg", agg);
+    });
+    singletons.stocks.connect();
+  }
+  return singletons.stocks;
+}
+
+export function subscribeStock(ticker: string) {
+  const stocks = ensureStocks();
+  stocks.subscribe(ticker);
+  return { subscribed: ticker };
+}

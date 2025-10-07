@@ -1,0 +1,113 @@
+openapi: 3.1.0
+info:
+  title: Options Copilot Gateway API
+  version: 1.0.0
+servers:
+  - url: https://radiant-renewal-production.up.railway.app
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+paths:
+  /api/manage-from-json:
+    post:
+      summary: Validate position, compute context, and return plan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [position]
+              properties:
+                position:
+                  type: object
+                  required: [underlying, expiration, strike, right, quantity, avg_price]
+                  properties:
+                    underlying: { type: string }
+                    expiration: { type: string, format: date }
+                    strike: { type: number }
+                    right: { type: string, enum: [C, P] }
+                    quantity: { type: integer }
+                    avg_price: { type: number }
+                mode:
+                  type: string
+                  enum: [advice, execute]
+                  default: advice
+      responses:
+        '200':
+          description: Plan response
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/fast-plan-from-json:
+    post:
+      summary: Deterministic rules-based plan (no OpenAI key required)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [position]
+              properties:
+                position:
+                  type: object
+                  required: [underlying, expiration, strike, right, quantity, avg_price]
+                  properties:
+                    underlying: { type: string }
+                    expiration: { type: string, format: date }
+                    strike: { type: number }
+                    right: { type: string, enum: [C, P] }
+                    quantity: { type: integer }
+                    avg_price: { type: number }
+      responses:
+        '200': { description: Plan response }
+  /api/watch:
+    get:
+      summary: List watchlist entries
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: Watchlist entries }
+    post:
+      summary: Add symbol to watchlist
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [symbol]
+              properties:
+                symbol: { type: string }
+                horizon: { type: string, default: scalp }
+      responses:
+        '200': { description: Added }
+  /api/watch/{symbol}:
+    delete:
+      summary: Remove symbol from watchlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Removed }
+  /api/events:
+    get:
+      summary: Server-sent events stream (quotes, signals, watch updates)
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: SSE stream }

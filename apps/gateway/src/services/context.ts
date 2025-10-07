@@ -4,14 +4,14 @@ import { computeGEX } from "./gamma.js";
 const POLY = "https://api.polygon.io";
 const POLY_KEY = process.env.POLYGON_KEY || process.env.POLYGON_API_KEY;
 
-type Bar = { o:number; h:number; l:number; c:number; v:number; vw?:number; t:number };
+export type Bar = { o:number; h:number; l:number; c:number; v:number; vw?:number; t:number };
 
-async function getBars(ticker:string, multiplier:number, timespan:string, fr:string, to:string): Promise<Bar[]> {
+export async function getBars(ticker:string, multiplier:number, timespan:string, fr:string, to:string): Promise<Bar[]> {
   const url = `${POLY}/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${fr}/${to}?sort=asc&limit=50000&apiKey=${POLY_KEY}`;
   const json: any = await fetchJsonCached(url, 5000);
   return (json.results||[]) as Bar[];
 }
-function atr14(bars: Bar[]) {
+export function atr14(bars: Bar[]) {
   const trs = [];
   for (let i=1;i<bars.length;i++) {
     const prev = bars[i-1], cur = bars[i];
@@ -22,7 +22,7 @@ function atr14(bars: Bar[]) {
   if (n===0) return 0;
   return trs.slice(-n).reduce((a,b)=>a+b,0)/n;
 }
-function vwap(bars: Bar[]) {
+export function vwap(bars: Bar[]) {
   let pv=0, vv=0;
   for (const b of bars) {
     const typ = (b.h + b.l + b.c)/3;
@@ -31,7 +31,7 @@ function vwap(bars: Bar[]) {
   }
   return vv>0 ? pv/vv : (bars.at(-1)?.c ?? 0);
 }
-function expectedMove(price:number, iv:number) { return price * iv * Math.sqrt(1/365); }
+export function expectedMove(price:number, iv:number) { return price * iv * Math.sqrt(1/365); }
 
 export async function buildContext(underlying: string, optionTicker: string) {
   const today = new Date().toISOString().slice(0,10);
