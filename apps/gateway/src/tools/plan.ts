@@ -22,6 +22,7 @@ Rules:
 - If GEX<0 → expect volatility expansion; widen EM targets; stops >= 1x ATR for swings, 0.75x for scalps.
 - If IV percentile is high, prefer debit/credit spreads; if low, allow single-leg buy.
 Return a crisp plan with intent, stop logic, TP ladder, invalidations, and 1-2 alternative contracts (ticker + why).` }]
+        `Ensure \`contracts_suggested\` has at least one entry and \`voice_script\` is an array of 2-3 short coaching lines.` }]
       }],
       text: {
         format: {

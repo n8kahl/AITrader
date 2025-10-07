@@ -2,7 +2,16 @@
   "title": "ManagementPlan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["intent","entry_logic","stop_logic","targets","invalidations","confidence"],
+  "required": [
+    "intent",
+    "entry_logic",
+    "stop_logic",
+    "targets",
+    "invalidations",
+    "contracts_suggested",
+    "voice_script",
+    "confidence"
+  ],
   "properties": {
     "intent": { "type": "string", "enum": ["hold","scale_in","scale_out","close","hedge"] },
     "entry_logic": { "type": "string" },
