@@ -28,7 +28,10 @@ export const parseImageTool = {
           // Some SDK versions require name at this level
           name: schemaName,
           // Keep nested json_schema for compatibility
-          json_schema: { name: schemaName, schema: positionSchema as any, strict: true }
+          json_schema: { name: schemaName, schema: positionSchema as any, strict: true },
+          // Some versions expect `schema` directly
+          schema: positionSchema as any,
+          strict: true
         }
       }
     } as any);

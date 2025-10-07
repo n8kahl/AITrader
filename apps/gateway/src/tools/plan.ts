@@ -27,7 +27,9 @@ Return a crisp plan with intent, stop logic, TP ladder, invalidations, and 1-2 a
         format: {
           type: "json_schema",
           name: schemaName,
-          json_schema: { name: schemaName, schema: planSchema as any, strict: true }
+          json_schema: { name: schemaName, schema: planSchema as any, strict: true },
+          schema: planSchema as any,
+          strict: true
         }
       }
     } as any);
