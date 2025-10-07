@@ -1,0 +1,23 @@
+# Node
+node_modules/
+*.log
+
+# Build outputs
+dist/
+
+# Env
+.env
+apps/gateway/.env
+
+# OS
+.DS_Store
+node_modules/
+dist/
+.env
+apps/gateway/.env
+
+node_modules/
+dist/
+.env
+apps/gateway/.env
+
