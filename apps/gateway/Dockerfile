@@ -2,7 +2,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 # Install all deps (incl. dev) to build TypeScript
-RUN npm ci
+RUN if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci; else npm install; fi
 COPY . .
 RUN npm run build
 
@@ -11,7 +11,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 # Only copy the minimal runtime artifacts
 COPY --from=build /app/package*.json ./
-RUN npm ci --omit=dev
+RUN if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 
