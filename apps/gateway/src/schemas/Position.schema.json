@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExtractedOptionPosition",
   "type": "object",
+  "additionalProperties": false,
   "required": ["underlying","expiration","strike","right","quantity","avg_price"],
   "properties": {
     "broker_detected": { "type": "string" },
