@@ -19,12 +19,14 @@ router.get("/events", (req, res) => {
   const onSignal = (payload:any) => send("signal.update", payload);
   const onWatch = (payload:any) => send("watch.update", payload);
   const onAgg = (payload:any) => send("agg", payload);
+  const onOrder = (payload:any) => send("order.update", payload);
 
   streamBus.on("quote", onQuote);
   streamBus.on("status", onStatus);
   streamBus.on("signal.update", onSignal);
   streamBus.on("watch.update", onWatch);
   streamBus.on("agg", onAgg);
+  streamBus.on("order.update", onOrder);
 
   // Warm start: dump a small snapshot of recent quotes
   for (const [sym, q] of Array.from(lastQuotes.entries()).slice(0,10)) {
@@ -40,5 +42,6 @@ router.get("/events", (req, res) => {
     streamBus.off("signal.update", onSignal);
     streamBus.off("watch.update", onWatch);
     streamBus.off("agg", onAgg);
+    streamBus.off("order.update", onOrder);
   });
 });

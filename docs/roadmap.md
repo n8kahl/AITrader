@@ -46,10 +46,10 @@
 - [ ] Implement auth/rate limiting (basic API key or user token).
 
 ### Phase 2 – Execution Guardrails (Week 2)
-- [ ] Risk Agent policies: spread% cap, daily loss (R) limit, position sizing guard.
-- [ ] Confirmation loop: capture “Yes, execute” confirmations and log.
-- [ ] Paper broker adapter integration (e.g., Tradier sandbox); wire order tool stubs.
-- [ ] Discord/voice notifications for plan updates (TP hit, stop moved).
+- [x] Risk guard policies: spread%, liquidity, max positions, daily notional.
+- [x] Confirmation loop: preview → place with confirm flag; journal + SSE.
+- [x] Paper order adapter with Discord/SSE notifications.
+- [ ] Voice notifications for plan updates (optional).
 
 ### Phase 3 – Advanced Insights (Week 3+)
 - [ ] Gamma regime dashboard & alerts (short vs. long gamma thresholds).

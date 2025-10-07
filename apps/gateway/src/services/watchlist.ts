@@ -1,6 +1,7 @@
 import { streamBus, subscribeOption, subscribeStock } from "./streams.js";
 import { computeSnapshot, Snapshot } from "./metrics.js";
 import { recordJournal } from "./journalStore.js";
+import { updateSignal } from "./signals.js";
 
 type WatchEntry = {
   symbol: string;
@@ -34,6 +35,7 @@ export async function watchSymbol(symbol: string, horizon = "scalp") {
   entry.lastSnapshot = snapshot;
   entry.lastUpdated = Date.now();
   streamBus.emit("signal.update", { symbol: norm, snapshot });
+  updateSignal(snapshot);
   recordJournal("watch_added", { symbol: norm, horizon, snapshot }).catch(()=>{});
   startPolling();
   return entry;
@@ -54,6 +56,10 @@ export function getWatchlist() {
   return Array.from(watchlist.values());
 }
 
+export function getWatchEntry(symbol: string) {
+  return watchlist.get(normalizeSymbol(symbol));
+}
+
 async function pollSnapshots() {
   if (polling) return;
   polling = true;
@@ -64,6 +70,7 @@ async function pollSnapshots() {
         entry.lastSnapshot = snapshot;
         entry.lastUpdated = Date.now();
         streamBus.emit("signal.update", { symbol: entry.symbol, snapshot });
+        updateSignal(snapshot);
         recordJournal("signal_snapshot", { symbol: entry.symbol, snapshot }).catch(()=>{});
       } catch (err) {
         streamBus.emit("error", { kind: "snapshot", symbol: entry.symbol, error: String(err) });

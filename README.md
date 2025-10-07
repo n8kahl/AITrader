@@ -44,6 +44,14 @@ npm start
   - `GET /api/events` (Server-Sent Events)
 - Snapshots contain price, VWAP/EMA/ATR/RVOL levels, gamma, and a confluence score. Data stays in your gateway; the model receives only compact JSON when you call `/api/manage-from-json` or `/api/fast-plan-from-json`.
 
+### Signals & Orders
+- The gateway computes a confluence-based signal state machine (forming → confirmed → invalidated) and emits `signal.update` events on `/api/events`.
+- Paper order flow:
+  1. `POST /api/orders/preview` with `{ intent: { symbol, side, qty, type, limit? } }`
+  2. Check guards (`spread_ok`, `liquidity_ok`, `max_positions`, `daily_limit`).
+  3. `POST /api/orders/place` with `{ intent: {...}, confirm: true }` to execute when you are satisfied.
+- Order events appear on SSE (`order.update`) and are journaled in Postgres if `DATABASE_URL` is set.
+
 ## Security
 - Optional bearer token: set `API_BEARER_TOKEN` to require `Authorization: Bearer <token>` on all `/api/*` routes.
 - The gateway serves an OpenAPI spec at `/openapi.yaml` so you can wire tools in code (OpenAI Agents SDK) without the Agent Builder UI.

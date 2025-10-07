@@ -9,6 +9,7 @@ import { router as manageFromJson } from "./routes/manageFromJson.js";
 import { router as fastPlan } from "./routes/fastPlan.js";
 import { router as events } from "./routes/events.js";
 import { router as watch } from "./routes/watch.js";
+import { router as orders } from "./routes/orders.js";
 import { bearerAuth } from "./middleware/auth.js";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api", manageFromImage);
 app.use("/api", manageFromJson);
 app.use("/api", fastPlan);
 app.use("/api", watch);
+app.use("/api", orders);
 app.use("/api", events);
 app.use("/api", health);
 
